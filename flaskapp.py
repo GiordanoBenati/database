@@ -1,22 +1,38 @@
-import os
-from datetime import datetime
-from flask import Flask, request, flash, url_for, redirect, \
-     render_template, abort, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory
+from json import dumps
 
 app = Flask(__name__)
 app.config.from_pyfile('flaskapp.cfg')
 
-@app.route('/')
+registroAlunni = {"0":{"numeroReg":"0","nome":"indefinito","cognome":"indefinito","annoNascita":"1900"}}
+
+@app.route("/")
 def index():
-    return render_template('index.html')
+   return send_from_directory('static/', 'index.html')
 
-@app.route('/<path:resource>')
-def serveStaticResource(resource):
-    return send_from_directory('static/', resource)
+@app.route("/js/<nomeFile>")
+def caricaJS(nomeFile):
+   return send_from_directory('static/js/', nomeFile)
+   return ""
 
-@app.route("/test")
-def test():
-    return "<strong>It's Alive!</strong>"
+@app.route("/alunnoByNumeroReg/", methods=["POST"])
+def alunnoByNumeroReg():
+   numeroReg = request.json['numeroReg']
+   dizAlunno = registroAlunni[numeroReg]
+   stringJson = jsonify ( ** dizAlunno )
+   return stringJson
 
-if __name__ == '__main__':
-    app.run()
+@app.route("/inserisciAlunnoPOST/", methods=["POST"])
+def inserisciAlunnoPOST():
+   numeroReg =    request.json['numeroReg']
+   nome =         request.json['nome']
+   cognome =      request.json['cognome']
+   annoNascita =  request.json['annoNascita']
+   dizAlunno = {"numeroReg": numeroReg, "nome":nome, "cognome":cognome, "annoNascita":annoNascita}
+   registroAlunni[numeroReg] = dizAlunno
+   return dumps({"success": True})
+
+if __name__=="__main__":
+   app.run()
+
+
